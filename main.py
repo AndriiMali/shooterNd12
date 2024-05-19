@@ -10,6 +10,8 @@ FPS = 60
 lost = 0
 score = 0
 monsters_num = 5
+health = 3
+text_health = 3
 
 window = pygame.display.set_mode(SIZE)
 
@@ -96,6 +98,23 @@ while game:
             if event.key == pygame.K_SPACE:
                 player.fire()
     if not finish:
+        if score >= 10:
+            finish = True
+            monsters.empty()
+            monsters.draw(window)
+
+            text_win = font_big.render("You win", True, (0, 255, 0))
+            window.blit(text_win, (WIDTH/2-100, HEIGHT/2))
+
+        if lost >= 5:
+            finish = True
+            monsters.empty()
+
+            text_lost = font_big.render("You lost", True, (255, 0, 0))
+            window.blit(text_lost, (WIDTH/2-100, HEIGHT/2))
+
+        text_health = font_medium.render("Життя: " + str(health), True, (255, 255, 255))
+        window.blit(text_health, (0, 80))
         window.blit(background, (0, 0))
         player.reset()
         player.update()    
@@ -105,10 +124,25 @@ while game:
         bullets.draw(window)
         text_lost = font_medium.render("Пропущено: " + str(lost), True, (255, 255, 255))
         text_score = font_medium.render("Збито: " + str(score), True, (255, 255, 255))
-        
+        text_health = font_medium.render("Життя: " + str(health), True, (255, 255, 255))
+
+        window.blit(text_health, (0, 80))
         window.blit(text_score, (0, 0))
         window.blit(text_lost, (0, 40))
 
+        shot_monsters = pygame.sprite.groupcollide(monsters, bullets, True, True)
+
+        for i in shot_monsters:
+            new_enemy = Enemy("ufo.png", (randint(10, WIDTH - 50), 0), randint(2, 6), (75, 50))
+            monsters.add(new_enemy)
+            score += 1
+            
+        if lost > 10 or health < 1:
+            finish = True
+
+        collisions = pygame.sprite.spritecollide(player, monsters, True)
+        for c in collisions:
+            health -= 1
 
 
     pygame.display.update()
